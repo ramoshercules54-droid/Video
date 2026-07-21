@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Video con registro educativo</title>
+
+  <style>
+    :root {
+      --fondo: #0f172a;
+      --panel: #111827;
+      --texto: #f8fafc;
+      --muted: #94a3b8;
+      --azul: #2563eb;
+      --borde: rgba(255,255,255,.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      color: var(--texto);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37,99,235,.20), transparent 35%),
+        var(--fondo);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .contenedor {
+      width: min(100%, 900px);
+    }
+
+    .cabecera {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .cabecera h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 5vw, 2.7rem);
+    }
+
+    .cabecera p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .reproductor {
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid var(--borde);
+      background: #000;
+      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      max-height: 78vh;
+      background: #000;
+    }
+
+    .estado {
+      display: none;
+      margin-top: 14px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: rgba(37,99,235,.12);
+      border: 1px solid rgba(37,99,235,.30);
+      color: #dbeafe;
+      text-align: center;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(2,6,23,.86);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal.activo {
+      display: grid;
+    }
+
+    .tarjeta {
+      width: min(100%, 430px);
+      padding: 26px;
+      color: #111827;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+
+    .etiqueta {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 7px 11px;
+      color: #1d4ed8;
+      background: #dbeafe;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+
+    .tarjeta h2 {
+      margin: 0 0 8px;
+    }
+
+    .tarjeta > p {
+      margin: 0 0 18px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    input:focus {
+      border-color: var(--azul);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .consentimiento {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 14px 0;
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .consentimiento input {
+      width: auto;
+      min-height: auto;
+      margin-top: 2px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 47px;
+      border: 0;
+      border-radius: 11px;
+      color: white;
+      background: var(--azul);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .nota {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .error {
+      min-height: 20px;
+      margin-top: 9px;
+      color: #b91c1c;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      .tarjeta {
+        padding: 20px;
+      }
+
+      video {
+        max-height: 72vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="contenedor">
+    <header class="cabecera">
+      <h1>Video educativo</h1>
+      <p>El video se pausará a los 4 segundos para un registro de demostración.</p>
+    </header>
+
+    <section class="reproductor">
+      <video id="video" controls playsinline preload="metadata">
+        <source src="video.mp4" type="video/mp4">
+        Tu navegador no permite reproducir este video.
+      </video>
+    </section>
+
+    <div class="estado" id="estado">
+      Registro de demostración completado. El video continuará.
+    </div>
+  </main>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="tituloRegistro">
+    <section class="tarjeta">
+      <div class="etiqueta">REGISTRO DE DEMOSTRACIÓN</div>
+
+      <h2 id="tituloRegistro">Regístrate para continuar</h2>
+
+      <p>
+        Esta pantalla no pertenece a Google ni solicita contraseñas.
+        Los datos no se envían ni se guardan.
+      </p>
+
+      <form id="formulario" novalidate>
+        <label for="nombre">Nombre o alias</label>
+        <input
+          id="nombre"
+          name="nombre"
+          type="text"
+          placeholder="Ejemplo: Usuario de prueba"
+          autocomplete="off"
+          required
+        >
+
+        <label for="correo">Correo de prueba</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          placeholder="ejemplo@correo.com"
+          autocomplete="off"
+          required
+        >
+
+        <label class="consentimiento">
+          <input id="acepto" type="checkbox" required>
+          <span>
+            Comprendo que es una simulación educativa y que no debo introducir
+            contraseñas ni información sensible.
+          </span>
+        </label>
+
+        <div class="error" id="error"></div>
+
+        <button type="submit">
+          Completar registro y continuar
+        </button>
+      </form>
+
+      <div class="nota">
+        La información permanece únicamente en esta pantalla mientras está abierta
+        y no se transmite a GitHub ni a ningún servidor.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const video = document.getElementById("video");
+    const modal = document.getElementById("modal");
+    const formulario = document.getElementById("formulario");
+    const nombre = document.getElementById("nombre");
+    const correo = document.getElementById("correo");
+    const acepto = document.getElementById("acepto");
+    const error = document.getElementById("error");
+    const estado = document.getElementById("estado");
+
+    let registroMostrado = false;
+
+    video.addEventListener("timeupdate", () => {
+      if (video.currentTime >= 4 && !registroMostrado) {
+        registroMostrado = true;
+        video.pause();
+        modal.classList.add("activo");
+        setTimeout(() => nombre.focus(), 100);
+      }
+    });
+
+    formulario.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      error.textContent = "";
+
+      const nombreValido = nombre.value.trim().length >= 2;
+      const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim());
+
+      if (!nombreValido) {
+        error.textContent = "Escribe un nombre o alias válido.";
+        nombre.focus();
+        return;
+      }
+
+      if (!correoValido) {
+        error.textContent = "Escribe un correo con formato válido.";
+        correo.focus();
+        return;
+      }
+
+      if (!acepto.checked) {
+        error.textContent = "Debes confirmar que comprendes la simulación.";
+        acepto.focus();
+        return;
+      }
+
+      modal.classList.remove("activo");
+      estado.style.display = "block";
+
+      formulario.reset();
+
+      try {
+        await video.play();
+      } catch (problema) {
+        estado.textContent =
+          "Registro completado. Pulsa reproducir para continuar viendo el video.";
+      }
+    });
+  </script>
+</body>
+</html>
