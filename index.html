@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Demostración educativa de recopilación de datos</title>
+
+  <style>
+    :root {
+      --fondo: #0f172a;
+      --panel: #111827;
+      --texto: #f8fafc;
+      --muted: #94a3b8;
+      --azul: #2563eb;
+      --rojo: #dc2626;
+      --verde: #16a34a;
+      --borde: rgba(255,255,255,.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--texto);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37,99,235,.20), transparent 35%),
+        var(--fondo);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .contenedor {
+      width: min(100%, 940px);
+      margin: 0 auto;
+    }
+
+    .aviso-principal {
+      margin-bottom: 16px;
+      padding: 15px;
+      border: 1px solid rgba(251,191,36,.35);
+      border-radius: 14px;
+      color: #fef3c7;
+      background: rgba(146,64,14,.25);
+      line-height: 1.5;
+    }
+
+    .cabecera {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .cabecera h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 5vw, 2.7rem);
+    }
+
+    .cabecera p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .reproductor {
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid var(--borde);
+      background: #000;
+      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      max-height: 72vh;
+      background: #000;
+    }
+
+    .estado {
+      display: none;
+      margin-top: 14px;
+      padding: 13px 15px;
+      border-radius: 12px;
+      background: rgba(22,163,74,.12);
+      border: 1px solid rgba(22,163,74,.30);
+      color: #dcfce7;
+      text-align: center;
+    }
+
+    .evidencia {
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px solid var(--borde);
+      border-radius: 18px;
+      background: rgba(17,24,39,.88);
+    }
+
+    .evidencia h2 {
+      margin: 0 0 8px;
+    }
+
+    .evidencia p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .ubicacion {
+      padding: 12px;
+      border-radius: 12px;
+      color: #dbeafe;
+      background: rgba(37,99,235,.12);
+      border: 1px solid rgba(37,99,235,.25);
+      font-family: monospace;
+      word-break: break-word;
+    }
+
+    pre {
+      min-height: 90px;
+      margin: 14px 0;
+      padding: 14px;
+      overflow: auto;
+      color: #d1fae5;
+      background: #020617;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .acciones button {
+      width: auto;
+      padding: 11px 15px;
+    }
+
+    .peligro {
+      margin-top: 14px;
+      padding: 14px;
+      border-left: 4px solid var(--rojo);
+      border-radius: 10px;
+      background: rgba(220,38,38,.10);
+      color: #fee2e2;
+      line-height: 1.5;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(2,6,23,.88);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal.activo { display: grid; }
+
+    .tarjeta {
+      width: min(100%, 430px);
+      padding: 26px;
+      color: #111827;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+
+    .etiqueta {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 7px 11px;
+      color: #1d4ed8;
+      background: #dbeafe;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+
+    .tarjeta h2 { margin: 0 0 8px; }
+
+    .tarjeta > p {
+      margin: 0 0 18px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    input:focus {
+      border-color: var(--azul);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .consentimiento {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 14px 0;
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .consentimiento input {
+      width: auto;
+      min-height: auto;
+      margin-top: 2px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 45px;
+      border: 0;
+      border-radius: 11px;
+      color: white;
+      background: var(--azul);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover { filter: brightness(.95); }
+
+    .boton-rojo { background: var(--rojo); }
+    .boton-verde { background: var(--verde); }
+
+    .nota {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .error {
+      min-height: 20px;
+      margin-top: 9px;
+      color: #b91c1c;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      .tarjeta { padding: 20px; }
+      video { max-height: 66vh; }
+      .acciones button { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="contenedor">
+    <div class="aviso-principal">
+      <strong>SIMULACIÓN EDUCATIVA:</strong> usa únicamente datos inventados.
+      No introduzcas contraseñas, datos bancarios ni información personal real.
+    </div>
+
+    <header class="cabecera">
+      <h1>Demostración de recopilación de información</h1>
+      <p>El video se pausará a los 4 segundos para mostrar cómo un formulario puede obtener datos.</p>
+    </header>
+
+    <section class="reproductor">
+      <video id="video" controls playsinline preload="metadata">
+        <source src="video.mp4" type="video/mp4">
+        Tu navegador no permite reproducir este video.
+      </video>
+    </section>
+
+    <div class="estado" id="estado">
+      Registro ficticio guardado localmente. El video continuará.
+    </div>
+
+    <section class="evidencia">
+      <h2>¿Dónde se guardó?</h2>
+      <p>
+        En esta demostración los registros se almacenan únicamente en el navegador
+        del dispositivo mediante <strong>localStorage</strong>. No se envían al
+        repositorio ni a Internet.
+      </p>
+
+      <div class="ubicacion">
+        Navegador → almacenamiento del sitio → clave:
+        <strong>registros_demo_educativa</strong>
+      </div>
+
+      <h3>Datos almacenados en este dispositivo</h3>
+      <pre id="visorDatos">Todavía no hay registros de demostración.</pre>
+
+      <div class="acciones">
+        <button type="button" class="boton-verde" id="actualizarDatos">
+          Actualizar evidencia
+        </button>
+
+        <button type="button" class="boton-rojo" id="borrarDatos">
+          Borrar registros locales
+        </button>
+      </div>
+
+      <div class="peligro">
+        <strong>¿Por qué puede ser peligroso?</strong><br>
+        Una página maliciosa podría enviar datos reales a un servidor externo sin que
+        la víctima comprenda dónde terminarán. También podría conservarlos, compartirlos
+        o combinarlos con otra información. Esta demostración no hace eso: guarda
+        solamente datos ficticios dentro del navegador y permite borrarlos.
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="tituloRegistro">
+    <section class="tarjeta">
+      <div class="etiqueta">SIMULACIÓN EDUCATIVA</div>
+
+      <h2 id="tituloRegistro">Registro ficticio para continuar</h2>
+
+      <p>
+        Esta pantalla no pertenece a Google. Usa un nombre y un correo inventados.
+        No se solicita contraseña.
+      </p>
+
+      <form id="formulario" novalidate>
+        <label for="nombre">Nombre o alias ficticio</label>
+        <input
+          id="nombre"
+          name="nombre"
+          type="text"
+          placeholder="Ejemplo: Usuario de prueba"
+          autocomplete="off"
+          required
+        >
+
+        <label for="correo">Correo ficticio</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          placeholder="prueba@example.com"
+          autocomplete="off"
+          required
+        >
+
+        <label class="consentimiento">
+          <input id="acepto" type="checkbox" required>
+          <span>
+            Confirmo que usaré datos inventados y comprendo que se guardarán
+            localmente en este navegador con fines de demostración.
+          </span>
+        </label>
+
+        <div class="error" id="error"></div>
+
+        <button type="submit">
+          Guardar demostración y continuar
+        </button>
+      </form>
+
+      <div class="nota">
+        No se envía información a GitHub, Gmail ni a ningún servidor.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const CLAVE = "registros_demo_educativa";
+
+    const video = document.getElementById("video");
+    const modal = document.getElementById("modal");
+    const formulario = document.getElementById("formulario");
+    const nombre = document.getElementById("nombre");
+    const correo = document.getElementById("correo");
+    const acepto = document.getElementById("acepto");
+    const error = document.getElementById("error");
+    const estado = document.getElementById("estado");
+    const visorDatos = document.getElementById("visorDatos");
+    const actualizarDatos = document.getElementById("actualizarDatos");
+    const borrarDatos = document.getElementById("borrarDatos");
+
+    let registroMostrado = false;
+
+    function leerRegistros() {
+      try {
+        const texto = localStorage.getItem(CLAVE);
+        const datos = texto ? JSON.parse(texto) : [];
+
+        visorDatos.textContent = datos.length
+          ? JSON.stringify(datos, null, 2)
+          : "Todavía no hay registros de demostración.";
+
+        return datos;
+      } catch (problema) {
+        visorDatos.textContent = "No se pudieron leer los registros locales.";
+        return [];
+      }
+    }
+
+    function guardarRegistro(registro) {
+      const registros = leerRegistros();
+      registros.push(registro);
+      localStorage.setItem(CLAVE, JSON.stringify(registros));
+      leerRegistros();
+    }
+
+    video.addEventListener("timeupdate", () => {
+      if (video.currentTime >= 4 && !registroMostrado) {
+        registroMostrado = true;
+        video.pause();
+        modal.classList.add("activo");
+        setTimeout(() => nombre.focus(), 100);
+      }
+    });
+
+    formulario.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      error.textContent = "";
+
+      const nombreFicticio = nombre.value.trim();
+      const correoFicticio = correo.value.trim();
+
+      const nombreValido = nombreFicticio.length >= 2;
+      const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoFicticio);
+
+      if (!nombreValido) {
+        error.textContent = "Escribe un nombre o alias ficticio válido.";
+        nombre.focus();
+        return;
+      }
+
+      if (!correoValido) {
+        error.textContent = "Escribe un correo ficticio con formato válido.";
+        correo.focus();
+        return;
+      }
+
+      if (!acepto.checked) {
+        error.textContent = "Debes confirmar el uso de datos inventados.";
+        acepto.focus();
+        return;
+      }
+
+      guardarRegistro({
+        nombreFicticio,
+        correoFicticio,
+        fechaLocal: new Date().toLocaleString(),
+        almacenamiento: "localStorage del navegador",
+        finalidad: "demostración educativa"
+      });
+
+      modal.classList.remove("activo");
+      estado.style.display = "block";
+      formulario.reset();
+
+      try {
+        await video.play();
+      } catch (problema) {
+        estado.textContent =
+          "Registro ficticio guardado. Pulsa reproducir para continuar el video.";
+      }
+    });
+
+    actualizarDatos.addEventListener("click", leerRegistros);
+
+    borrarDatos.addEventListener("click", () => {
+      localStorage.removeItem(CLAVE);
+      leerRegistros();
+      estado.style.display = "none";
+    });
+
+    leerRegistros();
+  </script>
+</body>
+</html>
